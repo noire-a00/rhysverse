@@ -6,4 +6,4 @@ requests
 python-dotenv
 SQLAlchemy
 gunicorn
-python
+psycopg2-binary

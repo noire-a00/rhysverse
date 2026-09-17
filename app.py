@@ -10,7 +10,10 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///rhysverse.db'
+database_url = os.getenv("DATABASE_URL")
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///rhysverse.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -241,10 +244,12 @@ def remove_from_shelf(id):
         flash("Buku dihapus dari bookshelf.", "success")
     return redirect("/bookshelf")
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
+
+with app.app_context():
+    db.create_all()
+
 if __name__ == "__main__":
-    @app.errorhandler(404)
-    def page_not_found(e):
-        return render_template("404.html"), 404
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
