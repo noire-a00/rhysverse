@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RhysVerse{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="spinner" style="display:none;">
+        <div class="spinner-overlay">
+            <div class="spinner-box">
+                <div class="spinner"></div>
+                <p>Finding books...</p>
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <a href="/" class="nav-logo">
+            RHYS VERSE
+            <span class="nav-tagline">Your Literary Universe</span>
+        </a>
+        <div class="nav-links" id="nav-links">
+            <a href="/">Home</a>
+            <a href="/search?q=fiction">Fiction</a>
+            <a href="/search?q=science">Science</a>
+            <a href="/search?q=history">History</a>
+            <a href="/about">About</a>
+            <a href="/mood">Mood</a>
+            {% if current_user.is_authenticated %}
+            <a href="/bookshelf">My Shelf</a>
+            <a href="/logout">Logout</a>
+            {% else %}
+            <a href="/login">Login</a>
+        {% endif %}
+        </div>
+        <form action="/search" method="GET" class="nav-search">
+            <input type="text" name="q" placeholder="Search books...">
+            <button type="submit">🔍</button>
+        </form>
+        <a href="https://instagram.com/noirelysium_" target="_blank" class="nav-instagram">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            </svg>
+        </a>
+        <button class="hamburger" id="hamburger" onclick="toggleMenu()">☰</button>
+    </nav>
+
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="/">Home</a>
+        <a href="/search?genre=Fiction">Fiction</a>
+        <a href="/search?genre=Science">Science</a>
+        <a href="/search?genre=History">History</a>
+        <a href="/search?genre=Romance">Romance</a>
+        <a href="/search?genre=Fantasy">Fantasy</a>
+        <a href="/about">About</a>
+        <a href="/mood">Mood</a>
+        <form action="/search" method="GET" class="mobile-search">
+            <input type="text" name="q" placeholder="Search books...">
+            <button type="submit">Cari</button>
+        </form>
+    </div>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>📖 RhysVerse</h3>
+                <p>Find your next favorite book.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Jelajahi</h4>
+                <a href="/search?genre=Fiction">Fiction</a>
+                <a href="/search?genre=Science">Science</a>
+                <a href="/search?genre=History">History</a>
+                <a href="/search?genre=Romance">Romance</a>
+                <a href="/search?genre=Fantasy">Fantasy</a>
+            </div>
+            <div class="footer-links">
+                <h4>Genre</h4>
+                <a href="/search?genre=Biography">Biography</a>
+                <a href="/search?genre=Technology">Technology</a>
+                <a href="/search?genre=Children">Children</a>
+            </div>
+            <div class="footer-links">
+                <h4>Info</h4>
+                <a href="/about">About</a>
+                <a href="https://instagram.com/noirelysium_" target="_blank">Instagram</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 RhysVerse. Powered by Google Books API and Noire.</p>
+        </div>
+    </footer>
+
+    <script>
+    document.querySelectorAll('.book-card').forEach((card, i) => {
+        card.style.animationDelay = `${i * 0.05}s`;
+    });
+
+    const searchForms = document.querySelectorAll('form');
+    searchForms.forEach(form => {
+        form.addEventListener('submit', () => {
+            const spinner = document.getElementById('spinner');
+            if (spinner) spinner.style.display = 'flex';
+
+            const grid = document.querySelector('.book-grid');
+            if (grid) {
+                grid.innerHTML = '';
+                for (let i = 0; i < 8; i++) {
+                    grid.innerHTML += `
+                        <div class="skeleton">
+                            <div class="skeleton-cover"></div>
+                            <div class="skeleton-info">
+                                <div class="skeleton-title"></div>
+                                <div class="skeleton-title short"></div>
+                                <div class="skeleton-author"></div>
+                            </div>
+                        </div>`;
+                }
+            }
+        });
+    });
+
+    function toggleMenu() {
+        const menu = document.getElementById('mobile-menu');
+        const hamburger = document.getElementById('hamburger');
+        menu.classList.toggle('active');
+        hamburger.textContent = menu.classList.contains('active') ? '✕' : '☰';
+    }
+    window.addEventListener('scroll', () => {
+    const btn = document.getElementById('back-to-top');
+    if (window.scrollY > 300) {
+        btn.style.display = 'flex';
+    } else {
+        btn.style.display = 'none';
+    }
+    });
+    </script>
+    <button id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
+</body>
+</html>

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Bookshelf - RhysVerse{% endblock %}
+
+{% block content %}
+<div class="bookshelf-container">
+    <div class="bookshelf-hero">
+        <h1>My Bookshelf</h1>
+        <p>Welcome back, <span>{{ current_user.username }}</span></p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% if books %}
+    <div class="book-grid">
+        {% for book in books %}
+        <div class="book-card-shelf">
+            <a href="/book/{{ book.book_id }}" class="book-card">
+                {% if book.cover %}
+                <img src="{{ book.cover }}" alt="{{ book.title }}">
+                {% else %}
+                <div class="no-cover">No Cover</div>
+                {% endif %}
+                <div class="book-info">
+                    <h3>{{ book.title }}</h3>
+                    <p class="author">{{ book.author }}</p>
+                    <p class="year">{{ book.year }}</p>
+                </div>
+            </a>
+            <a href="/bookshelf/remove/{{ book.id }}" class="remove-btn">🗑 Remove</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-shelf">
+        <p>📚 Your bookshelf is empty.</p>
+        <a href="/" class="auth-btn" style="display:inline-block; text-decoration:none; padding: 12px 32px;">Explore Books</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

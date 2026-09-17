@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Login - RhysVerse{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-left">
+        <div class="auth-left-content">
+            <h2>Welcome Back.</h2>
+            <p>Your literary universe awaits.</p>
+            <a href="/register" class="auth-switch-btn">Register</a>
+        </div>
+    </div>
+
+    <div class="auth-right">
+        <h1>Login</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form action="/login" method="POST" class="auth-form">
+            <div class="auth-input-box">
+                <input type="email" name="email" placeholder="Email" required>
+                <span>✉</span>
+            </div>
+            <div class="auth-input-box">
+                <input type="password" name="password" placeholder="Password" required>
+                <span>🔒</span>
+            </div>
+            <button type="submit" class="auth-btn">Login</button>
+        </form>
+
+        <p class="auth-link">Don't have an account? <a href="/register">Register</a></p>
+    </div>
+</div>
+{% endblock %}

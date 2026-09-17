@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Rhys Verse - Temukan Buku Favoritmu{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Find Your Favorite Books</h1>
+    <p>Explore Millions of Books.</p>
+    <form action="/search" method="GET" class="search-form">
+        <input type="text" name="q" placeholder="Search titles, authors, genres..."
+               value="{{ query if query else '' }}">
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+<div class="genre-section">
+    <div class="genre-filters">
+        <a href="/" class="genre-btn {% if not genre %}active{% endif %}">All</a>
+        {% for g in genres %}
+        <a href="/search?genre={{ g }}&q={{ query }}" 
+           class="genre-btn {% if genre == g %}active{% endif %}">{{ g }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+{% if books %}
+<div class="results-section">
+    <p class="results-count">
+        {% if genre %}Genre: <strong>{{ genre }}</strong>{% endif %}
+        {% if query %} — Hasil untuk: <strong>{{ query }}</strong>{% endif %}
+    </p>
+    <div class="book-grid">
+        {% for book in books %}
+        <a href="/book/{{ book.id }}" class="book-card">
+            {% if book.cover %}
+            <img src="{{ book.cover }}" alt="{{ book.title }}">
+            {% else %}
+            <div class="no-cover">No Cover</div>
+            {% endif %}
+            <div class="book-info">
+                <h3>{{ book.title }}</h3>
+                <p class="author">{{ book.author }}</p>
+                <p class="year">{{ book.year }}</p>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+{% else %}
+<div class="results-section">
+    <h2 class="section-title">Trending Now</h2>
+    <div class="book-grid">
+        {% for book in trending %}
+        <a href="/book/{{ book.id }}" class="book-card">
+            {% if book.cover %}
+            <img src="{{ book.cover }}" alt="{{ book.title }}">
+            {% else %}
+            <div class="no-cover">No Cover</div>
+            {% endif %}
+            <div class="book-info">
+                <h3>{{ book.title }}</h3>
+                <p class="author">{{ book.author }}</p>
+                <p class="year">{{ book.year }}</p>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

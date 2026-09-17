@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}{{ book.title }} - RhysVerse{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <a href="javascript:history.back()" class="back-btn">← Kembali</a>
+
+    <div class="detail-layout">
+        <div class="detail-cover">
+            {% if book.cover %}
+            <img src="{{ book.cover }}" alt="{{ book.title }}">
+            {% else %}
+            <div class="no-cover large">No Cover</div>
+            {% endif %}
+
+            <div class="book-actions">
+                <button onclick="showPreview()" class="btn-preview">📖 Baca Preview</button>
+                <a href="https://books.google.com/books?id={{ book.id }}" 
+                   target="_blank" class="btn-buy">🛒 Lihat di Google Books</a>
+
+                {% if current_user.is_authenticated %}
+                    {% if in_shelf %}
+                    <button class="btn-preview" style="background:#2a2a3e; color:#a7a9be; cursor:default;">✓ Saved to Bookshelf</button>
+                    {% else %}
+                    <form action="/bookshelf/add" method="POST">
+                        <input type="hidden" name="book_id" value="{{ book.id }}">
+                        <input type="hidden" name="title" value="{{ book.title }}">
+                        <input type="hidden" name="author" value="{{ book.authors }}">
+                        <input type="hidden" name="cover" value="{{ book.cover }}">
+                        <input type="hidden" name="year" value="{{ book.year }}">
+                        <button type="submit" class="btn-preview">+ Save to Bookshelf</button>
+                    </form>
+                    {% endif %}
+                {% else %}
+                <a href="/login" class="btn-preview" style="text-decoration:none; text-align:center;">Login to Save</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="detail-info">
+            <h2>{{ book.title }}</h2>
+            <p class="detail-author">✍️ {{ book.authors }}</p>
+
+            <div class="detail-meta">
+                <span>📅 {{ book.year }}</span>
+                <span>📄 {{ book.pages }} halaman</span>
+                <span>⭐ {{ book.rating }}</span>
+            </div>
+
+            <p class="detail-category">🏷️ {{ book.categories }}</p>
+            <p class="detail-publisher">🏢 {{ book.publisher }}</p>
+
+            <div class="detail-description">
+                <h3>Sinopsis</h3>
+                <p>{{ book.description | safe }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="preview-section" style="display:none;">
+        <h3 class="preview-title">📖 Preview Buku</h3>
+        <iframe id="preview-iframe"
+                src=""
+                width="100%"
+                height="600"
+                frameborder="0"
+                style="border-radius: 12px;">
+        </iframe>
+        <p id="preview-unavailable" style="display:none;" class="preview-unavailable">
+            Preview tidak tersedia untuk buku ini.
+            <a href="https://books.google.com/books?id={{ book.id }}" target="_blank">
+                Lihat di Google Books →
+            </a>
+        </p>
+    </div>
+</div>
+
+<script>
+function showPreview() {
+    const section = document.getElementById('preview-section');
+    section.style.display = 'block';
+    section.scrollIntoView({ behavior: 'smooth' });
+
+    const iframe = document.getElementById('preview-iframe');
+    iframe.src = "https://books.google.com/books?id={{ book.id }}&lpg=PP1&pg=PP1&output=embed";
+
+    iframe.onerror = function() {
+        document.getElementById('preview-unavailable').style.display = 'block';
+        iframe.style.display = 'none';
+    };
+}
+</script>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}About - Rhys Verse{% endblock %}
+
+{% block content %}
+<div class="about-container">
+
+    <div class="about-hero">
+        <h1>About Rhys Verse</h1>
+        <p class="about-subtitle">Your Literary Universe</p>
+    </div>
+
+    <div class="about-content">
+        <div class="about-card">
+            <span class="about-icon">📖</span>
+            <h3>What is RhysVerse?</h3>
+            <p>RhysVerse is a book discovery platform built with love for literature. Find, explore, and preview millions of books from around the world all in one place.</p>
+        </div>
+        <div class="about-card">
+            <span class="about-icon">🔍</span>
+            <h3>How it Works</h3>
+            <p>RhysVerse is powered by the Google Books API, giving you access to millions of books across every genre imaginable. Search by title, author, or browse by category.</p>
+        </div>
+        <div class="about-card">
+            <span class="about-icon">✨</span>
+            <h3>Why RhysVerse?</h3>
+            <p>Built for book lovers who want a beautiful, simple, and fast way to discover their next favorite read. No clutter, no noise just books.</p>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <div class="about-section-inner">
+            <h2 class="about-section-title">Why <span>RHYS VERSE</span>?</h2>
+            <div class="about-text">
+                <p>You may wonder where the name RHYS VERSE came from.</p>
+                <p>The answer is simple, yet rather personal.</p>
+                <p>Rhys is a name that means something to me. It belongs to someone whose presence, in one way or another, became a small part of my story.</p>
+                <p>Perhaps he will never know how much this name means to me. Perhaps it was never meant to become anything more than a name.</p>
+                <p>So I decided to let it live somewhere else.</p>
+                <p class="about-highlight">Here.</p>
+                <p>RHYS VERSE is my little universe of books, stories, thoughts, and things I love. And hidden quietly within its name is a person I once found worth remembering.</p>
+                <p class="about-quote">Not every feeling needs to become a relationship.<br>Some things are beautiful simply because they existed.</p>
+                <p>And perhaps this is my way of keeping a beautiful name alive, without asking it to become anything more.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <div class="about-section-inner">
+            <h2 class="about-section-title">About <span>Me</span></h2>
+            <div class="about-me-layout">
+                <div class="about-me-photo">
+                    <img src="{{ url_for('static', filename='me.jpeg') }}" alt="Noire">
+                    <p class="about-me-name">Noire</p>
+                    <a href="https://instagram.com/noirelysium_" target="_blank" class="creator-instagram">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                        @noirelysium_
+                    </a>
+                </div>
+                <div class="about-text">
+                    <p class="about-tagline">A quiet mind, surrounded by stories.</p>
+                    <p>I'm <strong>Noire</strong>,everyone call me Lisa in real life, I'm a university student and an aspiring librarian who has always found something comforting in books.</p>
+                    <p>I have a particular fondness for stories that explore the human mind, loneliness, identity, and the strange ways people try to understand themselves. Some of the works that have stayed with me are <em>No Longer Human</em> by Osamu Dazai, <em>The Metamorphosis</em> by Franz Kafka, and <em>White Nights</em> by Fyodor Dostoevsky.</p>
+                    <p>I don't think every book needs to give us an answer. Sometimes, a book is meaningful simply because it makes us ask better questions.</p>
+                    <p>Beyond reading, I'm interested in learning languages, exploring technology, and discovering new perspectives through the things I encounter. I enjoy learning quietly, at my own pace, and collecting little pieces of knowledge along the way.</p>
+                    <p class="about-quote">One day, I hope to become a librarian.<br>Not simply someone who takes care of books, but someone who helps people find the right story, the right piece of knowledge, or perhaps even a small place where they feel understood.</p>
+                    <p>This website is my little library on the internet. A place for the books I've read, the stories I'm discovering, and the thoughts I want to keep.</p>
+                    <p class="about-highlight">Somewhere between the pages, I'm still figuring myself out.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Reading Mood - RhysVerse{% endblock %}
+
+{% block content %}
+<div class="mood-container">
+    <div class="mood-hero">
+        <h1>How are you feeling today?</h1>
+        <p>Pick a mood and we'll find the perfect book for you.</p>
+    </div>
+
+    <div class="mood-grid">
+        {% for mood in moods %}
+        <a href="/mood/{{ mood.name.lower().replace(' & ', '-').replace(' ', '-') }}" 
+           class="mood-card" style="--mood-color: {{ mood.color }}">
+            <h3>{{ mood.name }}</h3>
+            <p>{{ mood.description }}</p>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
