@@ -34,11 +34,11 @@
             <a href="/logout">Logout</a>
             {% else %}
             <a href="/login">Login</a>
-        {% endif %}
+            {% endif %}
         </div>
         <form action="/search" method="GET" class="nav-search">
             <input type="text" name="q" placeholder="Search books...">
-            <button type="submit">🔍</button>
+            <button type="submit">Search</button>
         </form>
         <a href="https://instagram.com/noirelysium_" target="_blank" class="nav-instagram">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -59,6 +59,13 @@
         <a href="/search?genre=Fantasy">Fantasy</a>
         <a href="/about">About</a>
         <a href="/mood">Mood</a>
+        {% if current_user.is_authenticated %}
+        <a href="/bookshelf">My Shelf</a>
+        <a href="/logout">Logout</a>
+        {% else %}
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+        {% endif %}
         <form action="/search" method="GET" class="mobile-search">
             <input type="text" name="q" placeholder="Search books...">
             <button type="submit">Cari</button>
@@ -92,6 +99,7 @@
             <div class="footer-links">
                 <h4>Info</h4>
                 <a href="/about">About</a>
+                <a href="/mood">Mood</a>
                 <a href="https://instagram.com/noirelysium_" target="_blank">Instagram</a>
             </div>
         </div>
@@ -99,6 +107,8 @@
             <p>© 2026 RhysVerse. Powered by Google Books API and Noire.</p>
         </div>
     </footer>
+
+    <button id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
 
     <script>
     document.querySelectorAll('.book-card').forEach((card, i) => {
@@ -135,15 +145,15 @@
         menu.classList.toggle('active');
         hamburger.textContent = menu.classList.contains('active') ? '✕' : '☰';
     }
+
     window.addEventListener('scroll', () => {
-    const btn = document.getElementById('back-to-top');
-    if (window.scrollY > 300) {
-        btn.style.display = 'flex';
-    } else {
-        btn.style.display = 'none';
-    }
+        const btn = document.getElementById('back-to-top');
+        if (window.scrollY > 300) {
+            btn.style.display = 'flex';
+        } else {
+            btn.style.display = 'none';
+        }
     });
     </script>
-    <button id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
 </body>
 </html>
