@@ -26,7 +26,7 @@ GENRES = ["Fiction", "Science", "History", "Romance", "Fantasy", "Biography", "T
 
 MOODS = [
     {"name": "Melancholic", "emoji": "🌧️", "description": "Stories that sit with sadness, loss, and the quiet ache of being human.", "color": "#6b7fd7", "query": "melancholic literary fiction loneliness grief"},
-    {"name": "Romantic", "emoji": "🌹", "description": "Love in all its forms — passionate, tender, bittersweet.", "color": "#e8677a", "query": "romance love story passionate novel"},
+    {"name": "Romantic", "emoji": "🌹", "description": "Love in all its forms passionate, tender, bittersweet.", "color": "#e8677a", "query": "romance love story passionate novel"},
     {"name": "Dark & Mysterious", "emoji": "🖤", "description": "Shadows, secrets, and stories that unsettle you in the best way.", "color": "#9b59b6", "query": "dark mystery thriller psychological suspense"},
     {"name": "Fantasy", "emoji": "✨", "description": "Worlds beyond imagination, magic, and epic adventures.", "color": "#f39c12", "query": "fantasy epic magic adventure novel"},
     {"name": "Cozy", "emoji": "☕", "description": "Warm, comforting reads perfect for a quiet afternoon.", "color": "#e67e22", "query": "cozy comfort feel good heartwarming novel"},
