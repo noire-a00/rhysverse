@@ -278,7 +278,7 @@ main {
         url('/static/dazai.jpg'),
         url('/static/franz.jpg'),
         url('/static/fyodor.jpg');
-    background-size: 33.33% auto, 33.33% auto, 33.33% auto;
+    background-size: 33.33% 100%, 33.33% 100%, 33.33% 100%;
     background-position: 0% top, 50% top, 100% top;
     background-repeat: no-repeat;
     filter: brightness(0.25) blur(1px);
