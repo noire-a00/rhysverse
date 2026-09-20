@@ -731,6 +731,19 @@ main {
         flex-direction: row;
         flex-wrap: wrap;
     }
+    #viewerCanvas {
+    height: 400px;
+    width: 100%;
+    overflow: hidden;
+    }
+
+    #preview-section {
+    overflow-x: hidden;
+    }
+
+    .detail-layout {
+    flex-direction: column;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1612,17 +1625,4 @@ main {
 #back-to-top:hover {
     background: #e57c00;
     transform: translateY(-3px);
-}
-#viewerCanvas {
-    height: 400px;
-    width: 100%;
-    overflow: hidden;
-}
-
-#preview-section {
-    overflow-x: hidden;
-}
-
-.detail-layout {
-    flex-direction: column;
 }
