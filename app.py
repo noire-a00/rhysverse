@@ -76,7 +76,13 @@ def fetch_books(query, max_results=12):
     if API_KEY:
         params["key"] = API_KEY
 
-    for attempt in range(2):
+    start = time.time()
+    for attempt in range(3):
+        if attempt > 0:
+            # Jeda antar percobaan supaya Google sempat pulih (503 biasanya sebentar)
+            if time.time() - start > 6:
+                break
+            time.sleep(0.8 * attempt)
         try:
             response = requests.get(GOOGLE_BOOKS_API, params=params, timeout=3)
             if response.status_code != 200:
