@@ -164,6 +164,7 @@ main {
     margin-bottom: 6px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;              /* <-- baris baru ini */
     -webkit-box-orient: vertical;
     overflow: hidden;
 }

@@ -68,30 +68,43 @@ CACHE_DURATION = 300
 
 def fetch_books(query, max_results=12):
     now = time.time()
-    if query in cache and now - cache[query]["time"] < CACHE_DURATION:
-        return cache[query]["data"]
-    try:
-        response = requests.get(GOOGLE_BOOKS_API, params={
-            "q": query, "maxResults": max_results, "orderBy": "relevance", "key": API_KEY
-        }, timeout=5)
-        data = response.json()
-        items = data.get("items", [])
-        books = []
-        for item in items:
-            info = item.get("volumeInfo", {})
-            cover = info.get("imageLinks", {}).get("thumbnail", "").replace("http://", "https://")
-            if cover:
-                books.append({
-                    "id": item.get("id"),
-                    "title": info.get("title", "Untitled"),
-                    "author": info.get("authors", ["Unknown"])[0],
-                    "year": info.get("publishedDate", "")[:4],
-                    "cover": cover
-                })
-        cache[query] = {"data": books, "time": now}
-        return books
-    except:
-        return []
+    cached = cache.get(query)
+    if cached and now - cached["time"] < CACHE_DURATION:
+        return cached["data"]
+
+    params = {"q": query, "maxResults": max_results, "orderBy": "relevance"}
+    if API_KEY:
+        params["key"] = API_KEY
+
+    for attempt in range(2):
+        try:
+            response = requests.get(GOOGLE_BOOKS_API, params=params, timeout=3)
+            if response.status_code != 200:
+                print(f"Google Books error {response.status_code}: {response.text[:200]}")
+                continue
+            items = response.json().get("items", [])
+            books = []
+            for item in items:
+                info = item.get("volumeInfo", {})
+                cover = info.get("imageLinks", {}).get("thumbnail", "").replace("http://", "https://")
+                if cover:
+                    books.append({
+                        "id": item.get("id"),
+                        "title": info.get("title", "Untitled"),
+                        "author": info.get("authors", ["Unknown"])[0],
+                        "year": info.get("publishedDate", "")[:4],
+                        "cover": cover
+                    })
+            if books:
+                cache[query] = {"data": books, "time": now}
+                return books
+        except Exception as e:
+            print(f"Google Books exception: {e}")
+
+    # Gagal dua kali: pakai data lama kalau ada, daripada halaman kosong
+    if cached:
+        return cached["data"]
+    return []
 
 GENRE_QUERIES = {
     "Fiction": "popular fiction novel",
