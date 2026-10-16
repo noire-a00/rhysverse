@@ -4,6 +4,7 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 import time
+import json
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -15,6 +16,7 @@ if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///rhysverse.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"pool_pre_ping": True, "pool_recycle": 280}
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -59,19 +61,62 @@ class BookShelf(db.Model):
     year = db.Column(db.String(10), nullable=True)
     status = db.Column(db.String(20), default='want_to_read')
 
+class BookCache(db.Model):
+    """Cache hasil Google Books yang tahan di database (tidak hilang saat server tidur)."""
+    query = db.Column(db.String(300), primary_key=True)
+    data = db.Column(db.Text, nullable=False)
+    updated_at = db.Column(db.Float, nullable=False)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
 cache = {}
-CACHE_DURATION = 300
+CACHE_DURATION = 300            # cache memori: 5 menit
+DB_CACHE_DURATION = 6 * 3600    # cache database dianggap segar: 6 jam
+
+def load_db_cache(query):
+    try:
+        row = db.session.get(BookCache, query)
+        if row:
+            return json.loads(row.data), row.updated_at
+    except Exception as e:
+        db.session.rollback()
+        print(f"DB cache read error: {e}")
+    return None, 0
+
+def save_db_cache(query, books):
+    try:
+        payload = json.dumps(books, ensure_ascii=False)
+        row = db.session.get(BookCache, query)
+        if row:
+            row.data = payload
+            row.updated_at = time.time()
+        else:
+            db.session.add(BookCache(query=query, data=payload, updated_at=time.time()))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f"DB cache write error: {e}")
 
 def fetch_books(query, max_results=12):
     now = time.time()
+    persist = query in PERSISTENT_QUERIES
+
+    # 1. Cache memori (cepat, tapi hilang saat server tidur)
     cached = cache.get(query)
     if cached and now - cached["time"] < CACHE_DURATION:
         return cached["data"]
 
+    # 2. Cache database (tahan lama). Kalau masih segar, Google tidak perlu dipanggil.
+    db_books, db_time = (None, 0)
+    if persist:
+        db_books, db_time = load_db_cache(query)
+        if db_books and now - db_time < DB_CACHE_DURATION:
+            cache[query] = {"data": db_books, "time": now}
+            return db_books
+
+    # 3. Panggil Google Books (coba sampai 3 kali dengan jeda)
     params = {"q": query, "maxResults": max_results, "orderBy": "relevance"}
     if API_KEY:
         params["key"] = API_KEY
@@ -79,7 +124,6 @@ def fetch_books(query, max_results=12):
     start = time.time()
     for attempt in range(3):
         if attempt > 0:
-            # Jeda antar percobaan supaya Google sempat pulih (503 biasanya sebentar)
             if time.time() - start > 6:
                 break
             time.sleep(0.8 * attempt)
@@ -103,13 +147,19 @@ def fetch_books(query, max_results=12):
                     })
             if books:
                 cache[query] = {"data": books, "time": now}
+                if persist:
+                    save_db_cache(query, books)
                 return books
         except Exception as e:
             print(f"Google Books exception: {e}")
 
-    # Gagal dua kali: pakai data lama kalau ada, daripada halaman kosong
+    # 4. Google gagal: pakai data lama (memori dulu, lalu database) daripada kosong
     if cached:
         return cached["data"]
+    if db_books:
+        # Simpan sebentar di memori supaya Google tidak dipanggil terus tiap request
+        cache[query] = {"data": db_books, "time": now - CACHE_DURATION + 60}
+        return db_books
     return []
 
 GENRE_QUERIES = {
@@ -122,6 +172,9 @@ GENRE_QUERIES = {
     "Technology": "technology programming book",
     "Children": "children book popular"
 }
+
+# Hanya query tetap ini yang disimpan di database (query bebas dari pengguna tidak).
+PERSISTENT_QUERIES = set(GENRE_QUERIES.values()) | {m["query"] for m in MOODS} | {"bestseller fiction"}
 
 @app.route("/")
 def home():
