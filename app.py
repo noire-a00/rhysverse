@@ -1,16 +1,40 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from urllib.parse import urlparse
 import requests
 import time
 import json
+import secrets
 from dotenv import load_dotenv
 import os
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY")
+
+# --- Keamanan 1: SECRET_KEY wajib ada di server (Vercel) ---
+# Di Vercel, kalau SECRET_KEY kosong app sengaja berhenti, bukan jalan dengan kunci kosong.
+# Di laptop, kalau kosong dipakai kunci acak sementara (login hilang tiap server restart).
+IS_PRODUCTION = bool(os.getenv("VERCEL"))
+secret_key = os.getenv("SECRET_KEY")
+if not secret_key:
+    if IS_PRODUCTION:
+        raise RuntimeError("SECRET_KEY belum diatur di environment variable.")
+    secret_key = secrets.token_hex(32)
+    print("PERINGATAN: SECRET_KEY kosong, pakai kunci sementara (hanya untuk lokal).")
+app.secret_key = secret_key
+
+# --- Keamanan 2: cookie sesi yang aman ---
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,        # cookie tidak bisa dibaca JavaScript
+    SESSION_COOKIE_SAMESITE="Lax",       # cookie tidak ikut terkirim dari form situs lain
+    SESSION_COOKIE_SECURE=IS_PRODUCTION, # hanya lewat HTTPS saat live (di lokal http tetap jalan)
+    REMEMBER_COOKIE_HTTPONLY=True,
+    REMEMBER_COOKIE_SAMESITE="Lax",
+    REMEMBER_COOKIE_SECURE=IS_PRODUCTION,
+)
+
 database_url = os.getenv("DATABASE_URL")
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
@@ -69,7 +93,19 @@ class BookCache(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
+
+# --- Keamanan 3: cek asal request (perlindungan CSRF tanpa ubah template) ---
+# Semua request POST, dan penghapusan buku (yang masih lewat link biasa), harus berasal
+# dari situs ini sendiri. Request dari situs lain ditolak.
+@app.before_request
+def cek_asal_request():
+    perlu_cek = request.method in ("POST", "PUT", "PATCH", "DELETE") or request.endpoint == "remove_from_shelf"
+    if not perlu_cek:
+        return
+    asal = request.headers.get("Origin") or request.headers.get("Referer")
+    if not asal or urlparse(asal).netloc != request.host:
+        abort(400)
 
 cache = {}
 CACHE_DURATION = 300            # cache memori: 5 menit
@@ -243,19 +279,41 @@ def register():
     if current_user.is_authenticated:
         return redirect("/")
     if request.method == "POST":
-        username = request.form.get("username")
-        email = request.form.get("email")
-        password = request.form.get("password")
+        # `or ""` supaya nilai kosong/None gak bikin error 500
+        username = (request.form.get("username") or "").strip()
+        email = (request.form.get("email") or "").strip()
+        password = request.form.get("password") or ""
+
+        # Validasi di sisi server (required di HTML cuma dicek browser)
+        if not username or not email or not password:
+            flash("Semua kolom wajib diisi.", "error")
+            return redirect("/register")
+        if len(username) < 3 or len(username) > 30:
+            flash("Username harus 3-30 karakter.", "error")
+            return redirect("/register")
+        if len(email) > 120 or "@" not in email or "." not in email.split("@")[-1]:
+            flash("Format email tidak valid.", "error")
+            return redirect("/register")
+        if len(password) < 8 or len(password) > 128:
+            flash("Password minimal 8 karakter.", "error")
+            return redirect("/register")
+
         if User.query.filter_by(username=username).first():
             flash("Username sudah dipakai.", "error")
             return redirect("/register")
         if User.query.filter_by(email=email).first():
             flash("Email sudah dipakai.", "error")
             return redirect("/register")
+
         hashed = generate_password_hash(password)
         user = User(username=username, email=email, password=hashed)
-        db.session.add(user)
-        db.session.commit()
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            flash("Terjadi kesalahan, coba lagi.", "error")
+            return redirect("/register")
         login_user(user)
         flash("Akun berhasil dibuat!", "success")
         return redirect("/")
@@ -266,9 +324,9 @@ def login():
     if current_user.is_authenticated:
         return redirect("/")
     if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
-        user = User.query.filter_by(email=email).first()
+        email = (request.form.get("email") or "").strip()
+        password = request.form.get("password") or ""
+        user = User.query.filter_by(email=email).first() if email else None
         if user and check_password_hash(user.password, password):
             login_user(user)
             flash("Login berhasil!", "success")
